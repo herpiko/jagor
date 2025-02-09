@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/jagor/2848a40eeecafebc7aac.worker.js.LICENSE"
   },
   {
-    "revision": "31f9c98f40b92c9b0be6fea3d6cd126e",
+    "revision": "6f1c271333bc76c38343c0e47ed89d12",
     "url": "/jagor/index.html"
   },
   {
@@ -16,7 +16,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/jagor/static/css/2.3322a422.chunk.css"
   },
   {
-    "revision": "7ff8d2f48bd712f7b170",
+    "revision": "5d5eeb7ac9fd211aec46",
     "url": "/jagor/static/css/main.5c2296a4.chunk.css"
   },
   {
@@ -28,16 +28,16 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/jagor/static/js/2.71824854.chunk.js.LICENSE"
   },
   {
-    "revision": "7ff8d2f48bd712f7b170",
-    "url": "/jagor/static/js/main.e5b24881.chunk.js"
+    "revision": "5d5eeb7ac9fd211aec46",
+    "url": "/jagor/static/js/main.b8cf4cc7.chunk.js"
   },
   {
     "revision": "1d08b6a16bcda2138886",
     "url": "/jagor/static/js/runtime-main.6232ca14.js"
   },
   {
-    "revision": "577ef68afa9a0c43daa789fada404bda",
-    "url": "/jagor/static/media/howto.577ef68a.png"
+    "revision": "6e3d00c18c7c6bce77d17c8d3b52f9e0",
+    "url": "/jagor/static/media/howto.6e3d00c1.png"
   },
   {
     "revision": "52dcea3bd9e4cbcfa2c2c38b3084e129",

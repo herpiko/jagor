@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/jagor/static/css/main.5c2296a4.chunk.css",
-    "main.js": "/jagor/static/js/main.e5b24881.chunk.js",
+    "main.js": "/jagor/static/js/main.b8cf4cc7.chunk.js",
     "runtime-main.js": "/jagor/static/js/runtime-main.6232ca14.js",
     "static/css/2.3322a422.chunk.css": "/jagor/static/css/2.3322a422.chunk.css",
     "static/js/2.71824854.chunk.js": "/jagor/static/js/2.71824854.chunk.js",
     "2848a40eeecafebc7aac.worker.js": "/jagor/2848a40eeecafebc7aac.worker.js",
     "2848a40eeecafebc7aac.worker.js.LICENSE": "/jagor/2848a40eeecafebc7aac.worker.js.LICENSE",
     "index.html": "/jagor/index.html",
-    "precache-manifest.ba9b8111365e13118929e275fbda8238.js": "/jagor/precache-manifest.ba9b8111365e13118929e275fbda8238.js",
+    "precache-manifest.d072edb3cdb711f3e1e450f81cc58183.js": "/jagor/precache-manifest.d072edb3cdb711f3e1e450f81cc58183.js",
     "service-worker.js": "/jagor/service-worker.js",
     "static/js/2.71824854.chunk.js.LICENSE": "/jagor/static/js/2.71824854.chunk.js.LICENSE",
-    "static/media/howto.png": "/jagor/static/media/howto.577ef68a.png",
+    "static/media/howto.png": "/jagor/static/media/howto.6e3d00c1.png",
     "static/media/incoming_outgoing.png": "/jagor/static/media/incoming_outgoing.52dcea3b.png",
     "static/media/spending_by_category.png": "/jagor/static/media/spending_by_category.b7a0b8c1.png",
     "static/media/spending_by_category_pie.png": "/jagor/static/media/spending_by_category_pie.090cf567.png",
@@ -23,6 +23,6 @@
     "static/css/2.3322a422.chunk.css",
     "static/js/2.71824854.chunk.js",
     "static/css/main.5c2296a4.chunk.css",
-    "static/js/main.e5b24881.chunk.js"
+    "static/js/main.b8cf4cc7.chunk.js"
   ]
 }
