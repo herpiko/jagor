@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/jagor/static/css/main.6e85e43d.chunk.css",
-    "main.js": "/jagor/static/js/main.dff92e1d.chunk.js",
+    "main.css": "/jagor/static/css/main.dfddfabc.chunk.css",
+    "main.js": "/jagor/static/js/main.9878f32a.chunk.js",
     "runtime-main.js": "/jagor/static/js/runtime-main.6232ca14.js",
     "static/css/2.3322a422.chunk.css": "/jagor/static/css/2.3322a422.chunk.css",
     "static/js/2.71824854.chunk.js": "/jagor/static/js/2.71824854.chunk.js",
     "2848a40eeecafebc7aac.worker.js": "/jagor/2848a40eeecafebc7aac.worker.js",
     "2848a40eeecafebc7aac.worker.js.LICENSE": "/jagor/2848a40eeecafebc7aac.worker.js.LICENSE",
     "index.html": "/jagor/index.html",
-    "precache-manifest.fdd60833da92af93ff9063218cfde4bd.js": "/jagor/precache-manifest.fdd60833da92af93ff9063218cfde4bd.js",
+    "precache-manifest.f369e6e6f3461b35dd67375d9f23ce79.js": "/jagor/precache-manifest.f369e6e6f3461b35dd67375d9f23ce79.js",
     "service-worker.js": "/jagor/service-worker.js",
     "static/js/2.71824854.chunk.js.LICENSE": "/jagor/static/js/2.71824854.chunk.js.LICENSE",
     "static/media/howto.png": "/jagor/static/media/howto.577ef68a.png",
@@ -22,7 +22,7 @@
     "static/js/runtime-main.6232ca14.js",
     "static/css/2.3322a422.chunk.css",
     "static/js/2.71824854.chunk.js",
-    "static/css/main.6e85e43d.chunk.css",
-    "static/js/main.dff92e1d.chunk.js"
+    "static/css/main.dfddfabc.chunk.css",
+    "static/js/main.9878f32a.chunk.js"
   ]
 }
