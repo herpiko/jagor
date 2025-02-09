@@ -329,8 +329,9 @@ class App extends React.Component {
           next = 'transactionNumber';
           console.log('next looking: ' + next);
         } else {
-          let message = 'Unrecognized category/mutation type: ' + line;
+          let message = 'Unrecognized category/mutation type: ' + line + '. Please report to herpiko@gmail.com to help improve Jagor!';
           console.log(message);
+          alert(message);
           continue;
         }
         continue;
@@ -356,35 +357,54 @@ class App extends React.Component {
           if (line[0] === '-') {
             currentItem.mutationType = 'credit';
           }
+          line = line.substring(1);
           // The amount value is being merged with balance value with no separator
           // Separate it manually.
           // Example merged value: -1.000.00020.003.043
-          line = line.substring(1);
+          // Case #1
           //line = '212.497436.213'; // -> Rp212.497
+          // Case #2
           //line = '50.0001.670.000'; // -> Rp50.000
+          // Case #3
           //line = '35064.054'; // -> Rp350
+          //line = '691.048.063'; // -> 69, from Tax on Interest
           let thousandArr = line.split('.');
           let amount = '';
           for (let i in thousandArr) {
             if (i == 0) {
-              //console.log('first item, pushing ' + thousandArr[i] + ' into amount');
+              if (thousandArr[i].length > 3) {
+                thousandArr[i] = thousandArr[i].substring(0,3);
+                console.log('first item, pushing ' + thousandArr[i] + ' into amount');
+                amount += thousandArr[i];
+                break;
+              }
+              console.log('first item, pushing ' + thousandArr[i] + ' into amount');
               amount += thousandArr[i];
               continue;
             }
 
             if (thousandArr[i].length == 3) {
-              //console.log('3-digit item, pushing ' + thousandArr[i] + ' into amount');
+              console.log('3-digit item, pushing ' + thousandArr[i] + ' into amount');
               amount += thousandArr[i];
               continue;
             }
 
             if (thousandArr[i].length > 3) {
-              //console.log('the last 3-digit item, pushing ' + thousandArr[i] + ' into amount');
+              console.log('the last 3-digit item, pushing ' + thousandArr[i] + ' into amount');
               thousandArr[i] = thousandArr[i].substring(0,3);
               amount += thousandArr[i];
               break;
             }
           }
+         
+          // There is no way that tax on interest will be greater than Rp10.000
+          // If it happened, then this is a case #3. Let's cut it to two digit value.
+          let amountInt = parseInt(amount, 10);
+          if (amountInt > 10000 && currentItem['category'].toLowerCase() == 'tax on interest') {
+            console.log('---------------x');
+            amount = amount.substring(0,2);
+          }
+
           console.log(next + ' found: ' + amount);
           currentItem[next] = amount; // keep it in string
           let readableAmount = 'Rp' + amount.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
@@ -921,7 +941,7 @@ class App extends React.Component {
                   <div className="disclaimer">
                     Jagor was forked from{' '}
                     <a href="https://aguno.xyz/jentor/">
-                      Jagor
+                      Jentor
                     </a>
                     .
                   </div>
@@ -1049,7 +1069,7 @@ class App extends React.Component {
         {this.state.incomingOutgoingEnabled && (
           <div style={{marginBottom: 50, padding: 15}}>
             <h4>Total Incoming vs Total Outgoing</h4>
-            <div style={{marginTop:'-15px', marginBottom:15, fontSize:11}}>Based on <a href="https://raw.githubusercontent.com/herpiko/jentor/master/src/categories.js">this classification</a></div>
+            <div style={{marginTop:'-15px', marginBottom:15, fontSize:11}}>Based on <a href="https://raw.githubusercontent.com/herpiko/jagor/master/src/categories.js">this classification</a></div>
             {/*
             <div style={{width: '300px', margin: '0 auto'}}>
               <Dropdown
