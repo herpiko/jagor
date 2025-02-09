@@ -71,7 +71,9 @@ const defaultState = {
     {title: 'category', field: 'category'},
     {title: 'entityName', field: 'entityName'},
     {title: 'entityDetail', field: 'entityDetail'},
-    {title: 'amount', field: 'amount'},
+    {title: 'amount', field: 'amount', align: 'right'},
+    {title: 'readableAmount', field: 'readableAmount', align: 'right'},
+    {title: 'pocketName', field: 'pocketName'},
   ],
   spendingByCategoryDataCurrentRange: 'all',
   spendingByCategoryData: {
@@ -138,16 +140,196 @@ class App extends React.Component {
   }
   parse = data => {
     // Some PDFs were generated with tab instead of space
-    data.text = data.text.replace(/\t/g, ' ');
-    let splitted = data.text.split('CategoryTransaction Type');
-    splitted.splice(0, 1);
-    let text = splitted.join('CategoryTransaction Type');
-    let lines = text.split("Disclaimer")[0].split(/\r?\n/);
+    let lines = data.text.split(/\r?\n/);
     let report = [];
     let isOnItem = false;
     let currentItem = {};
     let currentItemFieldNumber = 0;
+
+    let accountHolder = ''
+    let pocketDetail = ''
+
+    let next = ''
+
+    // Looking for account holder and pocket name
     for (let i in lines) {
+      let line = lines[i];
+      console.log(i + ':' + line);
+      if (line.includes('Pockets') && line.includes('Transactions')) {
+        next = 'paginationInfo';
+        continue;
+      }
+      if (next == 'paginationInfo') {
+        next = 'accountHolder';
+        continue;
+      }
+      if (next == 'accountHolder') {
+        accountHolder = line.replace(/\s+/g, ' ');
+        next = 'pocketDetail';
+        continue;
+      }
+      if (next == 'pocketDetail') {
+        pocketDetail = line.replace(/\s+/g, ' ');
+        next = '';
+        break;
+      }
+      if (i > 50) { // limit
+        break;
+      }
+    }
+
+    console.log(accountHolder);
+    console.log(pocketDetail);
+
+    next = 'date';
+
+    for (let i in lines) {
+      let line = lines[i];
+      line = line.replace(/\s+/g, ' '); // Change multiple spaces to single space
+
+      if (next === 'date') {
+        if (line.length != 11 || isNaN(line.substring(0,2))) {
+          console.log('Not a valid date string: ' + line)
+          continue;
+        }
+        console.log('This is a valid date string: ' + line);
+        // Split by tabs or spaces and check if it matches date pattern
+        let parts = line.trim().split(/[\t\s]+/);
+        if (parts.length === 3) {
+          let day = parts[0];
+          let month = parts[1];
+          let year = parts[2];
+        
+          // Check if parts match expected format
+          if (
+            // Day is 1-31
+            !isNaN(day) && parseInt(day) > 0 && parseInt(day) <= 31 &&
+            // Month is 3 letter abbreviation
+            month.length === 3 && isNaN(month) &&
+            // Year is 4 digit number
+              !isNaN(year) && year.length === 4
+          ) {
+            try {
+              let date = new Date(`${month} ${day} ${year}`);
+              if (date.toString() !== 'Invalid Date') {
+                isOnItem = true;
+                currentItem = {};
+                currentItem[next] = date;
+                currentItemFieldNumber = 1;
+                next = 'time'
+              }
+            } catch (e) {
+              // Invalid date format, continue to next line
+              continue;
+            }
+          } else {
+            continue;
+          }
+        }
+      }
+
+      if (next === 'time' && line.length === 5) {
+        let time = line;
+        currentItem['date'] = new Date(currentItem['date'].setHours(parseInt(time.split(':')[0]), parseInt(time.split(':')[1])));
+        next = 'entityName';
+        continue;
+      }
+
+      if (next === 'entityName') {
+        if (!categories.incomingCategories.includes(line) &&
+        !categories.outgoingCategories.includes(line)
+        ) {
+          if (line === undefined) line = '';
+          if (currentItem[next] === undefined) currentItem[next] = '';
+          currentItem[next] += line + ' ';
+          next = 'entityName';
+          continue;
+        } else {
+          next = 'category'
+          continue;
+        }
+      }
+
+      if (next === 'category') {
+        if (line.includes('Movement between')) {
+          // Start over, we don't want to record movement between pocket
+          next = 'date';
+          currentItem = {};
+          continue;
+        }
+        if (categories.incomingCategories.includes(line)) {
+          currentItem['category'] = line;
+          next = 'transactionNumber';
+        } else if (categories.outgoingCategories.includes(line)) {
+          currentItem['category'] = line;
+          next = 'transactionNumber';
+        } else {
+          let message = 'Unrecognized category/mutation type: ' + line;
+          console.log(message);
+          continue;
+        }
+        continue;
+      }
+
+      if (next === 'transactionNumber') {
+        currentItem[next] = line;
+        next = 'amount';
+        continue;
+      }
+
+      if (next === 'amount') {
+        if (line[0].includes('+') || line[0].includes('-')) {
+          console.log('amount: ' + line);
+          if (line[0] === '+') {
+            currentItem.mutationType = 'debit';
+          }
+          if (line[0] === '-') {
+            currentItem.mutationType = 'credit';
+          }
+          // The amount value is being merged with balance value with no separator
+          // Separate it manually.
+          // Example merged value: -1.000.00020.003.043
+          line = line.substring(1);
+          //line = '212.497436.213';
+          let thousandArr = line.split('.');
+          let amount = '';
+          for (let i in thousandArr) {
+            if (i === 0) amount += thousandArr[i];
+
+            if (thousandArr[i].length === 3) amount += thousandArr[i];
+
+            if (thousandArr[i].length > 3) {
+              thousandArr[i] = thousandArr[i].substring(0,3);
+              amount += thousandArr[i];
+              break;
+            }
+          }
+          currentItem[next] = amount; // keep it in string
+          let readableAmount = 'Rp' + amount.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+          currentItem['readableAmount'] = readableAmount;
+          currentItem['pocketName'] = pocketDetail;
+          console.log(currentItem);
+          report.push(currentItem);
+          currentItem = {};
+
+          // Start again to search another item
+          next = 'date';
+        } else {
+          continue;
+        }
+      }
+    }
+    /**
+
+
+    for (let i in lines) {
+      let line = lines[i];
+      // Keep replacing multiple spaces until no more multiple spaces exist
+      while (line.match(/\s{2,}/)) {
+        line = line.replace(/\s{2,}/g, ' ');
+      }
+      lines[i] = line;
+
       if (isOnItem) {
         switch (currentItemFieldNumber) {
           case 1:
@@ -211,6 +393,9 @@ class App extends React.Component {
         }
       }
     }
+     * 
+     */
+    report.reverse();
     return report;
   };
   handlePDF = arrayBuffer => {
@@ -264,6 +449,8 @@ class App extends React.Component {
             if (err) console.log(err);
             ret.metaData = metaData;
             ret.numrender = counter;
+            console.log('============================');
+            console.log(ret.text);
             doc.destroy();
             let data = null
             try {
@@ -281,6 +468,8 @@ class App extends React.Component {
   };
 
   processDb = data => {
+    console.log('-------------------- data length');
+    console.log(data.length);
     let count = -1;
     let result = [];
     let csvString = ''
@@ -298,6 +487,7 @@ class App extends React.Component {
         );
         record.id = count + 1;
         record.date = new Date(record.date);
+        record.dateTime = new Date(record.date);
         if (
           record.time &&
           record.time.length === 5 &&
@@ -310,12 +500,14 @@ class App extends React.Component {
         record.amount = parseInt(record.amount.replace(/,/g, ''), 10);
         if (!Number.isNaN(record.amount)) {
           result.push(record);
+          console.log(record.dateTime);
           csvString += `${record._id},${format(record.dateTime, 'yyyy-MM-dd HH:mm')},${record.transactionNumber},${record.mutationType},${record.category},${record.entityName},${record.entityDetail},${record.amount}\n`
         }
         cb();
       },
       err => {
         console.log(err);
+        console.log(csvString);
         this.setState(
           {
             csvString: csvString,
@@ -347,18 +539,25 @@ class App extends React.Component {
     );
     let breakTimeLoop = true;
     currentTime.setDate(1);
+    let count = 0;
     while (breakTimeLoop) {
+      //alert(currentTime);
       timeRange[currentTime.getFullYear().toString()] =
         timeRange[currentTime.getFullYear().toString()] || [];
+
+      //alert('1. Pushing ' + (currentTime.getMonth() + 1) + ' to ' +currentTime.getFullYear().toString());
       timeRange[currentTime.getFullYear().toString()].push(
         currentTime.getMonth() + 1,
       );
+
       if (currentTime.getMonth() + 1 === 12) {
         currentTime.setYear(currentTime.getFullYear() + 1);
         currentTime.setMonth(0);
       } else {
         currentTime.setMonth(currentTime.getMonth() + 1);
       }
+
+      // Finding the end
       if (
         currentTime.getFullYear() === end.getFullYear() &&
         currentTime.getMonth() === end.getMonth()
@@ -366,11 +565,16 @@ class App extends React.Component {
         breakTimeLoop = false;
         timeRange[currentTime.getFullYear().toString()] =
           timeRange[currentTime.getFullYear().toString()] || [];
+
+        //alert('2. Pushing ' + (currentTime.getMonth() + 1) + ' to ' +currentTime.getFullYear().toString());
         timeRange[currentTime.getFullYear().toString()].push(
           currentTime.getMonth() + 1,
         );
       }
     }
+
+    console.log('--------------------------- timerange');
+    console.log(timeRange);
     for (let i in this.state.jeniusCategories) {
       cat.all[this.state.jeniusCategories[i]] = 0;
       for (let j in Object.keys(timeRange)) {
@@ -384,12 +588,17 @@ class App extends React.Component {
         }
       }
     }
+
+    console.log(cat.all);
     this.setState({timeRangeKeys: Object.keys(cat).reverse()});
 
     for (let i in this.state.rows) {
       let dateTime = new Date(this.state.rows[i].dateTime);
+      console.log('------------ pushing row into categorized time range');
+      console.log(dateTime);
       let currentRange =
         dateTime.getFullYear() + '_' + this.state.monthMap[dateTime.getMonth()];
+      console.log(currentRange);
       cat[currentRange] = cat[currentRange] || {}
       if (this.state.rows[i].mutationType === 'credit') {
         cat.all['totalOutgoing'] = cat.all['totalOutgoing'] || 0;
@@ -431,9 +640,15 @@ class App extends React.Component {
     };
     let blankData = JSON.parse(JSON.stringify(spendingByCategoryData.all));
     let catKeys = Object.keys(cat.all);
+
+    console.log('--------------- catKeys');
+    console.log(catKeys);
     for (let i in catKeys) {
       console.log(catKeys[i]); // category
       let keys = Object.keys(cat);
+
+      console.log('--------------------------catKeys keys');
+      console.log(keys);
 
       for (let j in keys) {
         //console.log('-------------------------')
@@ -552,8 +767,8 @@ class App extends React.Component {
               <div style={{width: '100%'}}>
                 <div
                   style={{width: '100%', height: '60vh', paddingTop: '30vh'}}>
-                  <h1>Jentor</h1>
-                  <p>Your Jenius Transaction History Parser</p>
+                  <h1>Jagor</h1>
+                  <p>Your Jago Transaction History Parser</p>
                   <input
                     type="file"
                     onChange={e => this.handleChange(e.target.files)}
@@ -607,28 +822,25 @@ class App extends React.Component {
                   <br/>
                   <h2>About</h2>
                   <div className="disclaimer">
-                    Jentor was originally an unsuccessful submission for{' '}
-                    <a href="https://www.cocreate.id/cocreation-week-2020/hackathon/">
-                      Jenius's CoCreation Week 2020 Hackathon
+                    Jagor was forked from{' '}
+                    <a href="https://aguno.xyz/jentor/">
+                      Jagor
                     </a>
-                    . See{' '}
-                    <a href="https://github.com/herpiko/jentor/blob/master/jentor.pdf">
-                      our proposal here
-                    </a>.
+                    .
                   </div>
                   <div className="disclaimer">
                     <h4>Disclaimer</h4>
                     This is still a work-in-progress, may contains bugs, and only supports the English version of transaction history document. Also there is no
                     guarantee that the parser will always work as expected or the generated data will be in full accuracy. If
-                    Jenius decided to change the PDF layout or column of the
-                    report then Jentor may fail. The use or reliance of any information generated on this app is solely at your own risk. 
+                    Bank Jago decided to change the PDF layout or column of the
+                    report then Jagor may fail. The use or reliance of any information generated on this app is solely at your own risk. 
 										<br/><br/>
                     Our app does not and will not upload the PDF file to the
                     cloud. Your document will be parsed and processed in the
                     app/browser itself, hence zero user data will be out from
                     your device. We can not and will not try to obtain your data.
                     We know and fully understand about privacy. <br/><br/>Unsure? Check our{' '}
-                    <a href="https://github.com/herpiko/jentor">
+                    <a href="https://github.com/herpiko/jagor">
                       source code here
                     </a>
                     .
@@ -638,8 +850,8 @@ class App extends React.Component {
                     	Made in rush with &lt;3.
                     	<br />
                     	<br />
-                      Jenius is a trademark or a registered trademark of PT.
-                      Bank Tabungan Pensiunan Nasional
+                      Jago is a trademark or a registered trademark of
+                      PT Bank Jago Tbk
                     </span>
                   </div>
                 </div>
@@ -649,7 +861,7 @@ class App extends React.Component {
         )}
         {this.state.done && (
           <div className="App-done-header">
-            Jentor{' '}
+            Jagor{' '}
             <button
               style={{position: 'absolute', left: 15}}
               onClick={() => {

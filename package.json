@@ -25,7 +25,7 @@
     "universal-base64": "^2.1.0"
   },
   "scripts": {
-    "start": "GENERATE_SOURCEMAP=false react-scripts start",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider GENERATE_SOURCEMAP=false react-scripts start",
     "build": "rm -rf docs && GENERATE_SOURCEMAP=false PUBLIC_URL=/jentor/ react-scripts --max_old_space_size=4097 build && mv build docs",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
