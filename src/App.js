@@ -64,6 +64,7 @@ const defaultState = {
   // Main data
   rows: [],
   columns: [
+    {title: 'pocketName', field: 'pocketName'},
     {title: 'id', field: 'id'},
     {title: 'transactionNumber', field: 'transactionNumber'},
     {title: 'dateTime', field: 'dateTime'},
@@ -73,7 +74,6 @@ const defaultState = {
     {title: 'entityDetail', field: 'entityDetail'},
     {title: 'amount', field: 'amount', align: 'right'},
     {title: 'readableAmount', field: 'readableAmount', align: 'right'},
-    {title: 'pocketName', field: 'pocketName'},
   ],
   spendingByCategoryDataCurrentRange: 'all',
   spendingByCategoryData: {
