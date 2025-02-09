@@ -1,28 +1,28 @@
 {
   "files": {
-    "main.css": "/jentor/static/css/main.6e85e43d.chunk.css",
-    "main.js": "/jentor/static/js/main.4d84f785.chunk.js",
-    "runtime-main.js": "/jentor/static/js/runtime-main.23530029.js",
-    "static/css/2.3322a422.chunk.css": "/jentor/static/css/2.3322a422.chunk.css",
-    "static/js/2.6d7f521d.chunk.js": "/jentor/static/js/2.6d7f521d.chunk.js",
-    "f88a54640fe662eaff23.worker.js": "/jentor/f88a54640fe662eaff23.worker.js",
-    "f88a54640fe662eaff23.worker.js.LICENSE": "/jentor/f88a54640fe662eaff23.worker.js.LICENSE",
-    "index.html": "/jentor/index.html",
-    "precache-manifest.c9d36c1b87a5875fcb435b09ff4ce624.js": "/jentor/precache-manifest.c9d36c1b87a5875fcb435b09ff4ce624.js",
-    "service-worker.js": "/jentor/service-worker.js",
-    "static/js/2.6d7f521d.chunk.js.LICENSE": "/jentor/static/js/2.6d7f521d.chunk.js.LICENSE",
-    "static/media/howto.png": "/jentor/static/media/howto.577ef68a.png",
-    "static/media/incoming_outgoing.png": "/jentor/static/media/incoming_outgoing.52dcea3b.png",
-    "static/media/spending_by_category.png": "/jentor/static/media/spending_by_category.b7a0b8c1.png",
-    "static/media/spending_by_category_pie.png": "/jentor/static/media/spending_by_category_pie.090cf567.png",
-    "static/media/spinner.gif": "/jentor/static/media/spinner.c460e012.gif",
-    "static/media/table.png": "/jentor/static/media/table.58e21afc.png"
+    "main.css": "/jagor/static/css/main.6e85e43d.chunk.css",
+    "main.js": "/jagor/static/js/main.d522de65.chunk.js",
+    "runtime-main.js": "/jagor/static/js/runtime-main.6232ca14.js",
+    "static/css/2.3322a422.chunk.css": "/jagor/static/css/2.3322a422.chunk.css",
+    "static/js/2.71824854.chunk.js": "/jagor/static/js/2.71824854.chunk.js",
+    "2848a40eeecafebc7aac.worker.js": "/jagor/2848a40eeecafebc7aac.worker.js",
+    "2848a40eeecafebc7aac.worker.js.LICENSE": "/jagor/2848a40eeecafebc7aac.worker.js.LICENSE",
+    "index.html": "/jagor/index.html",
+    "precache-manifest.f8593173408294a84128cd9f7bd07ccf.js": "/jagor/precache-manifest.f8593173408294a84128cd9f7bd07ccf.js",
+    "service-worker.js": "/jagor/service-worker.js",
+    "static/js/2.71824854.chunk.js.LICENSE": "/jagor/static/js/2.71824854.chunk.js.LICENSE",
+    "static/media/howto.png": "/jagor/static/media/howto.577ef68a.png",
+    "static/media/incoming_outgoing.png": "/jagor/static/media/incoming_outgoing.52dcea3b.png",
+    "static/media/spending_by_category.png": "/jagor/static/media/spending_by_category.b7a0b8c1.png",
+    "static/media/spending_by_category_pie.png": "/jagor/static/media/spending_by_category_pie.090cf567.png",
+    "static/media/spinner.gif": "/jagor/static/media/spinner.c460e012.gif",
+    "static/media/table.png": "/jagor/static/media/table.58e21afc.png"
   },
   "entrypoints": [
-    "static/js/runtime-main.23530029.js",
+    "static/js/runtime-main.6232ca14.js",
     "static/css/2.3322a422.chunk.css",
-    "static/js/2.6d7f521d.chunk.js",
+    "static/js/2.71824854.chunk.js",
     "static/css/main.6e85e43d.chunk.css",
-    "static/js/main.4d84f785.chunk.js"
+    "static/js/main.d522de65.chunk.js"
   ]
 }

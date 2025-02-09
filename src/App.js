@@ -823,7 +823,7 @@ class App extends React.Component {
                   <h2>About</h2>
                   <div className="disclaimer">
                     Jagor was forked from{' '}
-                    <a href="https://aguno.xyz/jentor/">
+                    <a href="https://aguno.xyz/jagor/">
                       Jagor
                     </a>
                     .
@@ -952,7 +952,7 @@ class App extends React.Component {
         {this.state.incomingOutgoingEnabled && (
           <div style={{marginBottom: 50, padding: 15}}>
             <h4>Total Incoming vs Total Outgoing</h4>
-            <div style={{marginTop:'-15px', marginBottom:15, fontSize:11}}>Based on <a href="https://raw.githubusercontent.com/herpiko/jentor/master/src/categories.js">this classification</a></div>
+            <div style={{marginTop:'-15px', marginBottom:15, fontSize:11}}>Based on <a href="https://raw.githubusercontent.com/herpiko/jagor/master/src/categories.js">this classification</a></div>
             {/*
             <div style={{width: '300px', margin: '0 auto'}}>
               <Dropdown
