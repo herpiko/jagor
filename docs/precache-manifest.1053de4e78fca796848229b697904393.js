@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/jagor/2848a40eeecafebc7aac.worker.js.LICENSE"
   },
   {
-    "revision": "6f00eae3958ffbee82d35a2650d17c28",
+    "revision": "c7d1fb9491293583a4e2c7d10995e8a9",
     "url": "/jagor/index.html"
   },
   {
