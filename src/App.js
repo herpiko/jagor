@@ -154,7 +154,7 @@ class App extends React.Component {
     // Looking for account holder and pocket name
     for (let i in lines) {
       let line = lines[i];
-      console.log(i + ':' + line);
+      //console.log(i + ':' + line);
       if (line.includes('Pockets') && line.includes('Transactions')) {
         next = 'paginationInfo';
         continue;
@@ -178,14 +178,16 @@ class App extends React.Component {
       }
     }
 
-    console.log(accountHolder);
-    console.log(pocketDetail);
+    //console.log(accountHolder);
+    //console.log(pocketDetail);
 
     next = 'date';
 
     for (let i in lines) {
       let line = lines[i];
       line = line.replace(/\s+/g, ' '); // Change multiple spaces to single space
+      //alert(line);
+      console.log('looking for ' + next);
 
       if (next === 'date') {
         if (line.length != 11 || isNaN(line.substring(0,2))) {
@@ -212,11 +214,13 @@ class App extends React.Component {
             try {
               let date = new Date(`${month} ${day} ${year}`);
               if (date.toString() !== 'Invalid Date') {
-                isOnItem = true;
                 currentItem = {};
                 currentItem[next] = date;
                 currentItemFieldNumber = 1;
-                next = 'time'
+                console.log(next + ' found: ' + line);
+                next = 'time';
+                console.log('next looking: ' + next);
+                continue;
               }
             } catch (e) {
               // Invalid date format, continue to next line
@@ -231,22 +235,79 @@ class App extends React.Component {
       if (next === 'time' && line.length === 5) {
         let time = line;
         currentItem['date'] = new Date(currentItem['date'].setHours(parseInt(time.split(':')[0]), parseInt(time.split(':')[1])));
+        console.log(next + ' found: ' + line);
         next = 'entityName';
+        console.log('next looking: ' + next);
         continue;
       }
 
       if (next === 'entityName') {
+        // entityName can be merged without separator with category
+        let continueToTransactionNumber = false;
+        for (let i in categories.outgoingCategories) {
+          let category = categories.outgoingCategories[i];
+          if (line.indexOf(category) > -1) {
+            console.log(next + ' found: ' + line);
+            currentItem['category'] = category;
+            continueToTransactionNumber = true;
+          }
+        }
+        for (let i in categories.incomingCategories) {
+          let category = categories.incomingCategories[i];
+          if (line.indexOf(category) > -1) {
+            console.log(next + ' found: ' + line);
+            currentItem['category'] = category;
+            continueToTransactionNumber = true;
+          }
+        }
+
+        if (continueToTransactionNumber) {
+          next = 'transactionNumber';
+          console.log('next looking: ' + next);
+          continue;
+        }
+
+        if (categories.outgoingCategories.includes(line)) {
+          console.log(next + ' found: ' + line);
+          currentItem['category'] = line;
+          next = 'transactionNumber';
+          console.log('next looking: ' + next);
+          continue;
+        } else if (categories.incomingCategories.includes(line)) {
+          console.log(next + ' found: ' + line);
+          currentItem['category'] = line;
+          next = 'transactionNumber';
+          console.log('next looking: ' + next);
+          continue;
+        } else {
+          console.log('not contains any categories: ' + line);
+        }
+        if (line.includes('Movement between')) {
+          // Start over, we don't want to record movement between pocket
+          next = 'date';
+          console.log('start over, next looking: ' + next);
+          currentItem = {};
+          continue;
+        }
         if (!categories.incomingCategories.includes(line) &&
         !categories.outgoingCategories.includes(line)
         ) {
           if (line === undefined) line = '';
           if (currentItem[next] === undefined) currentItem[next] = '';
           currentItem[next] += line + ' ';
+          console.log(next + ' found: ' + line);
           next = 'entityName';
+          console.log('next looking: ' + next);
           continue;
         } else {
-          next = 'category'
-          continue;
+          console.log('category found when looking for entityName, move on to category')
+          next = 'category';
+          if (line.includes('Movement between')) {
+            // Start over, we don't want to record movement between pocket
+            next = 'date';
+            currentItem = {};
+            continue;
+          }
         }
       }
 
@@ -258,11 +319,15 @@ class App extends React.Component {
           continue;
         }
         if (categories.incomingCategories.includes(line)) {
+          console.log(next + ' found: ' + line);
           currentItem['category'] = line;
           next = 'transactionNumber';
+          console.log('next looking: ' + next);
         } else if (categories.outgoingCategories.includes(line)) {
+          console.log(next + ' found: ' + line);
           currentItem['category'] = line;
           next = 'transactionNumber';
+          console.log('next looking: ' + next);
         } else {
           let message = 'Unrecognized category/mutation type: ' + line;
           console.log(message);
@@ -272,8 +337,13 @@ class App extends React.Component {
       }
 
       if (next === 'transactionNumber') {
+        if (line === currentItem['category']) {
+          continue;
+        }
+        console.log(next + ' found: ' + line);
         currentItem[next] = line;
         next = 'amount';
+        console.log('next looking: ' + next);
         continue;
       }
 
@@ -290,30 +360,44 @@ class App extends React.Component {
           // Separate it manually.
           // Example merged value: -1.000.00020.003.043
           line = line.substring(1);
-          //line = '212.497436.213';
+          //line = '212.497436.213'; // -> Rp212.497
+          //line = '50.0001.670.000'; // -> Rp50.000
+          //line = '35064.054'; // -> Rp350
           let thousandArr = line.split('.');
           let amount = '';
           for (let i in thousandArr) {
-            if (i === 0) amount += thousandArr[i];
+            if (i == 0) {
+              //console.log('first item, pushing ' + thousandArr[i] + ' into amount');
+              amount += thousandArr[i];
+              continue;
+            }
 
-            if (thousandArr[i].length === 3) amount += thousandArr[i];
+            if (thousandArr[i].length == 3) {
+              //console.log('3-digit item, pushing ' + thousandArr[i] + ' into amount');
+              amount += thousandArr[i];
+              continue;
+            }
 
             if (thousandArr[i].length > 3) {
+              //console.log('the last 3-digit item, pushing ' + thousandArr[i] + ' into amount');
               thousandArr[i] = thousandArr[i].substring(0,3);
               amount += thousandArr[i];
               break;
             }
           }
+          console.log(next + ' found: ' + amount);
           currentItem[next] = amount; // keep it in string
           let readableAmount = 'Rp' + amount.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
           currentItem['readableAmount'] = readableAmount;
           currentItem['pocketName'] = pocketDetail;
+          console.log('pushing item to array');
           console.log(currentItem);
           report.push(currentItem);
           currentItem = {};
 
           // Start again to search another item
           next = 'date';
+          console.log('start over, next looking: ' + next);
         } else {
           continue;
         }
@@ -449,8 +533,8 @@ class App extends React.Component {
             if (err) console.log(err);
             ret.metaData = metaData;
             ret.numrender = counter;
-            console.log('============================');
-            console.log(ret.text);
+            //console.log('============================');
+            //console.log(ret.text);
             doc.destroy();
             let data = null
             try {
@@ -500,14 +584,14 @@ class App extends React.Component {
         record.amount = parseInt(record.amount.replace(/,/g, ''), 10);
         if (!Number.isNaN(record.amount)) {
           result.push(record);
-          console.log(record.dateTime);
+          //console.log(record.dateTime);
           csvString += `${record._id},${format(record.dateTime, 'yyyy-MM-dd HH:mm')},${record.transactionNumber},${record.mutationType},${record.category},${record.entityName},${record.entityDetail},${record.amount}\n`
         }
         cb();
       },
       err => {
         console.log(err);
-        console.log(csvString);
+        //console.log(csvString);
         this.setState(
           {
             csvString: csvString,
@@ -534,18 +618,26 @@ class App extends React.Component {
     let timeRange = {};
     timeRange[currentTime.getFullYear().toString()] =
       timeRange[currentTime.getFullYear().toString()] || [];
-    timeRange[currentTime.getFullYear().toString()].push(
-      currentTime.getMonth(),
-    );
+    //timeRange[currentTime.getFullYear().toString()].push(
+    //  currentTime.getMonth(),
+    //);
     let breakTimeLoop = true;
     currentTime.setDate(1);
     let count = 0;
+
+    //console.log(timeRange);
     while (breakTimeLoop) {
+      count++;
+      //if (count > 100) {
+      //  break;
+      //}
       //alert(currentTime);
       timeRange[currentTime.getFullYear().toString()] =
         timeRange[currentTime.getFullYear().toString()] || [];
 
       //alert('1. Pushing ' + (currentTime.getMonth() + 1) + ' to ' +currentTime.getFullYear().toString());
+      //console.log('1. Pushing ' + (currentTime.getMonth() + 1) + ' to ' +currentTime.getFullYear().toString());
+      //console.log(timeRange);
       timeRange[currentTime.getFullYear().toString()].push(
         currentTime.getMonth() + 1,
       );
@@ -567,14 +659,16 @@ class App extends React.Component {
           timeRange[currentTime.getFullYear().toString()] || [];
 
         //alert('2. Pushing ' + (currentTime.getMonth() + 1) + ' to ' +currentTime.getFullYear().toString());
+        //console.log('2. Pushing ' + (currentTime.getMonth() + 1) + ' to ' +currentTime.getFullYear().toString());
+        //console.log(timeRange);
         timeRange[currentTime.getFullYear().toString()].push(
           currentTime.getMonth() + 1,
         );
       }
     }
 
-    console.log('--------------------------- timerange');
-    console.log(timeRange);
+    //console.log('--------------------------- timerange');
+    //console.log(timeRange);
     for (let i in this.state.jeniusCategories) {
       cat.all[this.state.jeniusCategories[i]] = 0;
       for (let j in Object.keys(timeRange)) {
@@ -589,16 +683,19 @@ class App extends React.Component {
       }
     }
 
-    console.log(cat.all);
+    //console.log('------------ all cat');
+    //console.log(cat);
     this.setState({timeRangeKeys: Object.keys(cat).reverse()});
 
     for (let i in this.state.rows) {
       let dateTime = new Date(this.state.rows[i].dateTime);
-      console.log('------------ pushing row into categorized time range');
-      console.log(dateTime);
+      //console.log('------------ pushing row into categorized time range');
+      //console.log(dateTime);
       let currentRange =
         dateTime.getFullYear() + '_' + this.state.monthMap[dateTime.getMonth()];
-      console.log(currentRange);
+
+      //console.log(currentRange);
+
       cat[currentRange] = cat[currentRange] || {}
       if (this.state.rows[i].mutationType === 'credit') {
         cat.all['totalOutgoing'] = cat.all['totalOutgoing'] || 0;
@@ -641,14 +738,14 @@ class App extends React.Component {
     let blankData = JSON.parse(JSON.stringify(spendingByCategoryData.all));
     let catKeys = Object.keys(cat.all);
 
-    console.log('--------------- catKeys');
-    console.log(catKeys);
+    //console.log('--------------- catKeys');
+    //console.log(catKeys);
     for (let i in catKeys) {
-      console.log(catKeys[i]); // category
+      //console.log(catKeys[i]); // category
       let keys = Object.keys(cat);
 
-      console.log('--------------------------catKeys keys');
-      console.log(keys);
+      //console.log('--------------------------catKeys keys');
+      //console.log(keys);
 
       for (let j in keys) {
         //console.log('-------------------------')
@@ -732,7 +829,7 @@ class App extends React.Component {
         }
       }
     }
-    console.log(incomingOutgoingStackedData);
+    //console.log(incomingOutgoingStackedData);
     this.setState({
       spendingByCategoryData: spendingByCategoryData,
       incomingOutgoingData: incomingOutgoingData,
@@ -823,7 +920,7 @@ class App extends React.Component {
                   <h2>About</h2>
                   <div className="disclaimer">
                     Jagor was forked from{' '}
-                    <a href="https://aguno.xyz/jagor/">
+                    <a href="https://aguno.xyz/jentor/">
                       Jagor
                     </a>
                     .
@@ -952,7 +1049,7 @@ class App extends React.Component {
         {this.state.incomingOutgoingEnabled && (
           <div style={{marginBottom: 50, padding: 15}}>
             <h4>Total Incoming vs Total Outgoing</h4>
-            <div style={{marginTop:'-15px', marginBottom:15, fontSize:11}}>Based on <a href="https://raw.githubusercontent.com/herpiko/jagor/master/src/categories.js">this classification</a></div>
+            <div style={{marginTop:'-15px', marginBottom:15, fontSize:11}}>Based on <a href="https://raw.githubusercontent.com/herpiko/jentor/master/src/categories.js">this classification</a></div>
             {/*
             <div style={{width: '300px', margin: '0 auto'}}>
               <Dropdown
